@@ -1,0 +1,140 @@
+/* ---------------------------------------------------------------------------
+   Feuille de style des pages secondaires (proteins, protein, stress).
+   Autonome : ces pages ne chargent ni Three.js ni la scène.
+--------------------------------------------------------------------------- */
+
+:root {
+  --bg: #f3f4f4;
+  --ink: #20242b;
+  --muted: #737d89;
+  --line: #18253618;
+  --teal: #458a85;
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+html { scrollbar-gutter: stable; }
+body { margin: 0; background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
+h1, h2, p, dl, dd { margin: 0; }
+a { color: inherit; }
+a:focus-visible, input:focus-visible, button:focus-visible {
+  outline: 2px solid #538d9a;
+  outline-offset: 3px;
+}
+
+.page-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px clamp(16px, 5vw, 40px);
+  border-bottom: 1px solid var(--line);
+  background: #f3f4f4e8;
+  backdrop-filter: blur(12px);
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.6px;
+  text-decoration: none;
+}
+.badge {
+  padding: 2px 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 500;
+  color: #697782;
+}
+.back { font-size: 12px; color: #537a89; text-decoration: none; }
+.back:hover { text-decoration: underline; }
+
+.page { max-width: 720px; margin: 0 auto; padding: clamp(36px, 7vw, 64px) clamp(16px, 5vw, 40px) 96px; }
+.eyebrow {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.page h1 {
+  margin-top: 10px;
+  font-size: clamp(28px, 5vw, 36px);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -1px;
+}
+.page h2 {
+  margin-top: 36px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.page p { margin-top: 14px; font-size: 15px; line-height: 1.7; color: #404b56; }
+.page p a { color: #537a89; }
+.page code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
+.page kbd {
+  padding: 0 5px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-top: 24px;
+  padding: 0;
+}
+.grid > div {
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+}
+.grid dt { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: #8a949e; }
+.grid dd { margin-top: 4px; font-size: 17px; font-variant-numeric: tabular-nums; }
+
+.source-link { display: block; margin-top: 12px; font-size: 13px; color: #537a89; text-decoration: none; }
+.source-link:hover { text-decoration: underline; }
+
+input[type='search'] {
+  width: 100%;
+  height: 46px;
+  margin-top: 22px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  font: inherit;
+  font-size: 15px;
+}
+input[type='search']::-webkit-search-cancel-button { display: none; }
+
+.cards { display: grid; gap: 12px; margin-top: 16px; }
+.card { padding: 16px 18px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.card h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink);
+}
+.card .meta { margin-top: 6px; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: #8a949e; }
+.card p { margin-top: 10px; font-size: 13px; line-height: 1.65; }
+.card-link { display: inline-block; margin-top: 12px; font-size: 12px; color: #537a89; text-decoration: none; }
+.card-link:hover { text-decoration: underline; }
+a.card { display: block; text-decoration: none; }
+a.card:hover { border-color: #18253640; }
+.note { margin-top: 14px; font-size: 12px; color: #8a949e; }

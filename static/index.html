@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f3f4f4" />
+  <meta name="description" content="Interactive 3D tardigrade atlas — Django + JavaScript version." />
+  <title>TardiProT</title>
+  <link rel="icon" href="/static/favicon.svg" />
+  <link rel="stylesheet" href="/static/css/styles.css" />
+
+  <!--
+    Pas de bundler : l'import map indique au navigateur où trouver Three.js.
+    Les modules peuvent donc écrire `import * as THREE from 'three'`.
+  -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "/static/vendor/three/three.module.js",
+        "three/addons/": "/static/vendor/three/addons/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <main class="studio">
+    <!-- Le canvas Three.js est injecté ici par scene.js -->
+    <div id="scene" class="scene"></div>
+
+    <!-- Menu latéral : chaque entrée ouvre sa page dans un nouvel onglet -->
+    <nav class="panel side-rail" aria-label="Sections">
+      <a href="/" target="_blank" rel="noopener" title="Home (new tab)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 11 12 4l8 7v8a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1z" /></svg>
+        <span>Home</span>
+      </a>
+      <a href="/proteins/" target="_blank" rel="noopener" title="Explore proteins (new tab)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+        <span>Explore Proteins</span>
+      </a>
+      <a href="/protein/" target="_blank" rel="noopener" title="Protein details (new tab)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 7h12M8 12h12M8 17h12M4 7h.01M4 12h.01M4 17h.01" /></svg>
+        <span>Protein details</span>
+      </a>
+      <a href="/stress/" target="_blank" rel="noopener" title="Stress response (new tab)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M13 3 5 14h6l-1 7 8-11h-6z" /></svg>
+        <span>Stress response</span>
+      </a>
+    </nav>
+
+    <header class="identity">
+      <p class="eyebrow"><span class="dot"></span>Interactive anatomy</p>
+      <h1>TardiProt <span class="badge">3D</span></h1>
+      <p class="meta"><span id="piece-count">Protein sites</span><span>·</span>Water bear</p>
+    </header>
+
+    <nav class="top-actions" aria-label="Panels">
+      <button id="search-toggle" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+        <span>Find a protein</span>
+        <kbd>/</kbd>
+      </button>
+      <button id="about-toggle" type="button" class="icon" aria-label="About this atlas">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 8h.01" /></svg>
+      </button>
+    </nav>
+
+    
+    <!-- Recherche : uniquement les protéines servies par Django -->
+    <section id="search-panel" class="panel search-panel" hidden aria-label="Protein search">
+      <div class="panel-head">
+        <h2>Find a protein</h2>
+        <button id="search-close" type="button" class="icon" aria-label="Close search">×</button>
+      </div>
+
+      <div id="proteins-pane">
+        <input id="protein-search" type="search" placeholder="Dsup, CAHS, trehalose…" aria-label="Search the protein database" />
+        <div id="protein-results" class="results"></div>
+        <p id="proteins-note" class="note">Type a protein name — results come from the Django API.</p>
+      </div>
+    </section>
+
+    <nav class="panel view-controls" aria-label="Camera controls">
+      <button type="button" data-view="three-quarter" class="active" aria-pressed="true" title="Three-quarter view">¾</button>
+      <button type="button" data-view="front" aria-pressed="false" title="Front view">F</button>
+      <button type="button" data-view="side" aria-pressed="false" title="Side view">S</button>
+      <button type="button" data-view="back" aria-pressed="false" title="Back view">B</button>
+      <span class="divider" aria-hidden="true"></span>
+      <button type="button" id="rotate-toggle" aria-pressed="false" title="Auto rotate">⟳</button>
+      <button type="button" id="reset-view" title="Reset view">↺</button>
+    </nav>
+
+    <p class="caption">
+      <span class="caption-line"></span>
+      <span id="caption-text">Water bear · Tardigrada</span>
+      <span class="caption-line"></span>
+    </p>
+
+    <div class="panel dock">
+      <div class="zoom-control">
+        <div class="zoom-head">
+          <label for="zoom">Zoom</label>
+          <output id="zoom-value" for="zoom">0%</output>
+        </div>
+        <input id="zoom" type="range" min="0" max="100" step="1" value="0" />
+        <div class="zoom-ends"><span>Water bear</span><span>Proteins</span></div>
+      </div>
+
+      <div class="zoom-control">
+        <div class="zoom-head">
+          <label for="temperature">Temperature</label>
+          <output id="temperature-value" for="temperature">0°C</output>
+        </div>
+        <input id="temperature" type="range" min="0" max="100" step="1" value="0" />
+        <div class="zoom-ends"><span>0</span><span>100</span></div>
+      </div>
+
+      <div class="zoom-control">
+        <div class="zoom-head">
+          <label for="hydration">Hydratation</label>
+          <output id="hydration-value" for="hydration">0%</output>
+        </div>
+        <input id="hydration" type="range" min="0" max="100" step="1" value="0" />
+        <div class="zoom-ends"><span>0</span><span>100</span></div>
+      </div>
+
+      <button type="button" id="reset-dock" class="dock-reset"><span aria-hidden="true">↺</span> Reset</button>
+    </div>
+
+
+    <p class="footer">Drag to orbit · Scroll to zoom</p>
+
+    <!-- Fiche d'une pièce ou d'une protéine -->
+    <aside id="details" class="panel sheet" hidden aria-label="Details">
+      <p class="eyebrow" id="detail-kind">Protein</p>
+      <h2 id="detail-title"></h2>
+      <p id="detail-description"></p>
+      <dl id="detail-meta" class="meta-grid"></dl>
+      <a id="detail-link" class="source-link" target="_blank" rel="noreferrer" hidden></a>
+      <button type="button" id="detail-close" class="sheet-close">Close</button>
+    </aside>
+
+    <aside id="about" class="panel sheet" hidden aria-label="About">
+      <p class="eyebrow">Source &amp; scope</p>
+      <h2>A microscopic survivor.</h2>
+      <p>Explore a 3D tardigrade model split into its naturally separate specific proteins.</p>
+      <p><strong>Water Bear · Tardigrada</strong><br />Tardigrades are eight-legged segmented micro-animals that survive extremes through cryptobiosis.</p>
+      <h3>Source</h3>
+      <p>“Water Bear” by oneillbeck on Sketchfab, licensed under CC Attribution 4.0 International.</p>
+      <a class="source-link" href="https://sketchfab.com/3d-models/water-bear-6e0ecc9d43ad4cf9a17efab2900f72ee" target="_blank" rel="noreferrer">Original 3D model ↗</a>
+      <a class="source-link" href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer">License terms ↗</a>
+      <button type="button" id="about-close" class="sheet-close">Close</button>
+    </aside>
+
+    <div id="loading" class="panel overlay" role="status">
+      <div>
+        <strong>Preparing the tardigrade</strong>
+        <span id="loading-detail">Loading the catalogue…</span>
+      </div>
+    </div>
+
+    <div id="error" class="panel overlay error" role="alert" hidden>
+      <p id="error-message"></p>
+      <button type="button" id="error-reload">Reload viewer</button>
+    </div>
+  </main>
+
+  <script type="module" src="/static/js/main.js"></script>
+</body>
+</html>
