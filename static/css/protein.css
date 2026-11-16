@@ -1,0 +1,70 @@
+/* BARRE DE RECHERCHE */
+.protein-search {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative;
+    width: 500px;
+    max-width: 90%;
+    margin: 30px auto 15px;
+    z-index: 1000;
+}
+
+#protein-search {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+    background: white;
+    color: black;
+    box-sizing: border-box;
+}
+
+/* RÉSULTATS */
+#search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    z-index: 200;
+}
+
+#search-results[hidden] {
+    display: none;
+}
+
+.search-result {
+    display: block;
+    width: 100%;
+    padding: 10px 14px;
+    border: none;
+    background: white;
+    text-align: left;
+    cursor: pointer;
+}
+
+.search-result:hover {
+    background: #f0f0f0;
+}
+
+/* PROTÉINE AFFICHÉE */
+#selected-protein {
+    text-align: center;
+    margin: 10px;
+}
+
+/* VIEWER */
+#viewer3 {
+    position: relative;
+    width: 65%;
+    height: 600px;
+    margin-left: 20px;
+}

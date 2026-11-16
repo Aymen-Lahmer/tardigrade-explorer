@@ -6,7 +6,12 @@
  */
 
 const detail = document.getElementById('protein-detail');
-const id = new URLSearchParams(location.search).get('id');
+const params = new URLSearchParams(location.search);
+const id = params.get('id');
+
+const structure = document.getElementById('structure');
+const viewerNote = document.getElementById('viewer-note');
+let viewer = null; // instance Mol*, créée une seule fois
 
 function paragraph(text) {
   const element = document.createElement('p');
@@ -81,6 +86,62 @@ function renderChoices(proteins) {
   detail.replaceChildren(title, paragraph('Pick a record to see its full entry.'), list);
 }
 
+/**
+ * Affiche la structure 3D dans #viewer.
+ *  - ?pdb=1ABC dans l'URL : charge cette entrée PDB (pratique pour tester) ;
+ *  - sinon, si la protéine a un identifiant UniProt : prédiction AlphaFold DB ;
+ *  - sinon : message « pas de structure ».
+ */
+async function showStructure(protein) {
+  structure.hidden = false;
+  const pdb = params.get('pdb');
+
+  if (!pdb && !protein.uniprot_id) {
+    viewerNote.textContent = 'No UniProt id for this record yet, so no structure to show.';
+    return;
+  }
+  if (!window.molstar) {
+    viewerNote.textContent = 'Mol* could not be loaded (check the internet connection).';
+    return;
+  }
+
+  try {
+    viewer = await molstar.Viewer.create('viewer', {
+      layoutIsExpanded: false,
+      layoutShowControls: false,
+      layoutShowRemoteState: false,
+      layoutShowLog: false,
+      layoutShowLeftPanel: false,
+      viewportShowExpand: false,
+      viewportShowSelectionMode: false,
+    });
+
+    if (pdb) {
+      await viewer.loadPdb(pdb);
+      viewerNote.textContent = `Experimental structure PDB ${pdb.toUpperCase()}.`;
+      return;
+    }
+
+    // L'API AlphaFold DB renvoie l'URL exacte du fichier de prédiction.
+    const response = await fetch(`https://alphafold.ebi.ac.uk/api/prediction/${protein.uniprot_id}`);
+    if (!response.ok) throw new Error('No AlphaFold prediction for this UniProt id.');
+    const [prediction] = await response.json();
+    await viewer.loadStructureFromUrl(prediction.cifUrl, 'mmcif');
+
+    // Coloration par confiance pLDDT (bleu = fiable, orange = désordonné).
+    try {
+      const manager = viewer.plugin.managers.structure;
+      const components = manager.hierarchy.current.structures.flatMap((s) => s.components);
+      await manager.component.updateRepresentationsTheme(components, { color: 'plddt-confidence' });
+    } catch { /* la structure reste affichée avec les couleurs par défaut */ }
+
+    viewerNote.textContent = 'AlphaFold prediction, coloured by pLDDT confidence. '
+      + 'Low confidence (orange) usually means an intrinsically disordered region.';
+  } catch (error) {
+    viewerNote.textContent = `3D structure unavailable: ${error.message}`;
+  }
+}
+
 async function load() {
   const endpoint = id ? `/api/proteins/?id=${encodeURIComponent(id)}` : '/api/proteins/';
 
@@ -95,6 +156,7 @@ async function load() {
       detail.replaceChildren(paragraph(`No protein with record #${id}.`));
     } else {
       renderRecord(data.results[0]);
+      showStructure(data.results[0]);
     }
   } catch (error) {
     detail.replaceChildren(paragraph(`${error.message} Start the site with “python manage.py runserver”.`));
