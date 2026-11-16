@@ -3,6 +3,8 @@
 from django.db.models import Q
 from django.http import Http404, HttpResponse, JsonResponse
 from django.views.decorators.http import require_GET
+from django.shortcuts import render
+
 
 from .models import Protein
 from .settings import STATIC_DIR
@@ -66,3 +68,12 @@ def proteins(request):
     ]
 
     return JsonResponse({'query': query, 'count': len(results), 'results': results})
+
+
+
+def protein_view(request):
+    context = {
+        'cif_url': '/static/data/9RKP.cif'
+    }
+
+    return render(request, 'protein.html', context)
