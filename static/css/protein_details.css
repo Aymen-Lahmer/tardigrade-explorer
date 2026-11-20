@@ -1,0 +1,77 @@
+/* ---------------------------------------------------------------------------
+   Page /protein_details/ : choisir une structure et l'afficher en 3D.
+
+   Chargée uniquement par static/pages/protein_details.html, après pages.css
+   (base typographique + barre de recherche partagée) et molstar.css.
+
+   Rien ici ne concerne la page /explore_proteins/ : sa liste de protéines
+   utilise les styles génériques de pages.css (.cards / .card / .note).
+--------------------------------------------------------------------------- */
+
+/* Barre de recherche.
+   Les trois !important défendent la barre contre la feuille de style de Mol*,
+   qui redéfinit des styles globaux de formulaire. */
+.protein-search {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative;
+    width: 500px;
+    max-width: 90%;
+    margin: 30px auto 15px;
+    z-index: 1000;
+}
+
+/* Le champ lui-même vient de pages.css (input[type='search']). */
+.protein-search input {
+    margin-top: 0;
+}
+
+/* Menu déroulant des structures disponibles */
+#search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    z-index: 200;
+}
+
+#search-results[hidden] {
+    display: none;
+}
+
+.search-result {
+    display: block;
+    width: 100%;
+    padding: 10px 14px;
+    border: none;
+    background: white;
+    text-align: left;
+    font: inherit;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.search-result:hover {
+    background: #f0f0f0;
+}
+
+/* Structure actuellement affichée */
+#selected-protein {
+    text-align: center;
+    margin: 10px;
+    font-size: 13px;
+    color: #737d89;
+}
+
+/* Viewer Mol* */
+#viewer3 {
+    position: relative;
+    width: 65%;
+    height: 600px;
+    margin-left: 20px;
+}

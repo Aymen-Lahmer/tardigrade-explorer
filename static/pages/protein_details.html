@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Protein details · TardiProt</title>
+
+  <!-- Base commune aux pages secondaires (typographie, en-tête, barre de recherche) -->
+  <link rel="icon" href="/static/favicon.svg">
+  <link rel="stylesheet" href="/static/css/pages.css">
+  <!-- Styles propres à cette page : recherche de structure + viewer Mol* -->
+  <link rel="stylesheet" href="/static/css/protein_details.css">
+
+  <!-- CSS de Mol* -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/molstar@latest/build/viewer/molstar.css">
+
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <header class="page-head">
+    <a class="brand" href="/">
+      TardiProt <span class="badge">3D</span>
+    </a>
+
+    <a class="back" href="/explore_proteins/" target="_blank" rel="noopener">
+      Explore the protein database
+    </a>
+  </header>
+
+
+  <!-- BARRE DE RECHERCHE : choisir une structure .cif -->
+  <section class="protein-search" aria-label="Structure search">
+
+    <input type="search" id="protein-search" placeholder="Search a structure (9RKP, 4R5J)..." aria-label="Search a 3D structure" autocomplete="off">
+
+    <div id="search-results" hidden></div>
+
+  </section>
+
+
+  <!-- STRUCTURE ACTUELLEMENT AFFICHÉE -->
+  <div id="selected-protein">
+    Currently displaying: 9RKP
+  </div>
+
+
+  <!-- VIEWER MOL* -->
+  <div id="viewer3"></div>
+
+
+  <!-- BIBLIOTHÈQUE MOL* -->
+  <script src="https://cdn.jsdelivr.net/npm/molstar@latest/build/viewer/molstar.js"></script>
+
+  <!-- SCRIPT DE LA PAGE -->
+  <script src="/static/js/protein_details.js"></script>
+
+</body>
+
+</html>

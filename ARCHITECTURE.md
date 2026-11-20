@@ -23,17 +23,33 @@ GET /static/models/*.json|*.bin  ──>  urls.py ──> serve         ──> 
 GET /api/proteins/?q=Dsup        ──>  urls.py ──> views.proteins ──> modèles.py ──> SQLite
 ```
 
-Trois routes seulement, définies dans `tardigradesite/urls.py` :
+Quatre routes seulement, définies dans `tardigradesite/urls.py` :
 
 | URL demandée | Vue Python | Réponse |
 | --- | --- | --- |
 | `/` | `views.index` | le contenu de `static/index.html` |
 | `/api/proteins/` | `views.proteins` | JSON construit depuis SQLite |
 | `/static/...` | `django.views.static.serve` | CSS, JS, Three.js, modèles 3D |
+| `/<page>/` | `views.page` | `static/pages/<page>.html` servi tel quel |
 
 Le dossier `static/` est servi par Django lui-même (`document_root=STATIC_DIR`),
 ce qui permet de tout lancer avec un simple `manage.py runserver`, sans
 `collectstatic`. C'est un montage de **développement**.
+
+### Pages secondaires : un fichier par page
+
+Chaque page secondaire est autonome — son HTML, son JS et, si elle a une
+interface particulière, son CSS. Le seul point commun est `pages.css`.
+
+| Page | HTML | JS | CSS |
+| --- | --- | --- | --- |
+| `/explore_proteins/` | `static/pages/explore_proteins.html` | `static/js/explore_proteins.js` | `pages.css` (cartes, recherche) |
+| `/protein_details/` | `static/pages/protein_details.html` | `static/js/protein_details.js` | `pages.css` + `protein_details.css` (viewer Mol*) |
+| `/stress/` | `static/pages/stress.html` | — | `pages.css` |
+
+La règle à garder en tête : **`explore_proteins` lit la base Django**
+(`/api/proteins/`, donc du texte), **`protein_details` lit les `.cif`** de
+`static/data/` (donc de la 3D). Aucun des deux ne partage de code avec l'autre.
 
 ---
 

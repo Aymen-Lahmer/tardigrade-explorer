@@ -1,9 +1,8 @@
-"""Vues du site : la page unique et l'API des protéines."""
+"""Vues du site : la page unique, les pages secondaires et l'API des protéines."""
 
 from django.db.models import Q
 from django.http import Http404, HttpResponse, JsonResponse
 from django.views.decorators.http import require_GET
-from django.shortcuts import render
 
 
 from .models import Protein
@@ -13,7 +12,11 @@ from .settings import STATIC_DIR
 MAX_RESULTS = 50
 
 # Pages secondaires ouvertes par le menu de gauche, servies telles quelles.
-PAGES = ('proteins', 'protein', 'stress')
+# Chacune a son propre HTML et son propre JS dans static/ :
+#   explore_proteins -> static/pages/explore_proteins.html + static/js/explore_proteins.js
+#   protein_details  -> static/pages/protein_details.html  + static/js/protein_details.js
+#   stress           -> static/pages/stress.html
+PAGES = ('explore_proteins', 'protein_details', 'stress')
 
 
 @require_GET
@@ -68,12 +71,3 @@ def proteins(request):
     ]
 
     return JsonResponse({'query': query, 'count': len(results), 'results': results})
-
-
-
-def protein_view(request):
-    context = {
-        'cif_url': '/static/data/9RKP.cif'
-    }
-
-    return render(request, 'protein.html', context)

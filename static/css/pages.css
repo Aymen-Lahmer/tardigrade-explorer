@@ -1,6 +1,11 @@
 /* ---------------------------------------------------------------------------
-   Feuille de style des pages secondaires (proteins, protein, stress).
+   Base commune des pages secondaires (explore_proteins, protein_details, stress).
    Autonome : ces pages ne chargent ni Three.js ni la scène.
+
+   Contient les éléments partagés : en-tête, titres, barre de recherche
+   (input[type='search']), cartes (.cards / .card). Le viewer Mol* et son menu
+   déroulant vivent dans protein_details.css, chargé par la seule page
+   /protein_details/.
 --------------------------------------------------------------------------- */
 
 :root {
@@ -108,6 +113,7 @@ a:focus-visible, input:focus-visible, button:focus-visible {
 .source-link { display: block; margin-top: 12px; font-size: 13px; color: #537a89; text-decoration: none; }
 .source-link:hover { text-decoration: underline; }
 
+/* Barre de recherche partagée par /explore_proteins/ et /protein_details/. */
 input[type='search'] {
   width: 100%;
   height: 46px;

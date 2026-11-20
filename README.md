@@ -1,20 +1,17 @@
 # Tardigrade Atlas — version JavaScript autonome
 
-Version autonome et volontairement simple du studio `../tardigrade/`.
-Django sert la page et l'API, le navigateur affiche le tardigrade en 3D avec Three.js.
-Pas de React, pas de TypeScript, pas de Vite, pas de `node_modules` : trois modules
-JavaScript natifs, lisibles de haut en bas.
+Django sert les pages et l'API, le navigateur affiche le tardigrade en 3D avec Three.js.
+JavaScript natifs pour la scène 3D, plus un script dédié par page secondaire, tous
+lisibles de haut en bas.
 
-Le dossier est complet : le modèle 3D, Three.js et la base de protéines vivent
-à l'intérieur, rien n'est importé depuis le reste du dépôt.
 
 ## Lancer
 
 ```sh
-cd tardigrade-js
+cd tardigrade-explorer
 python3 -m venv venv
 ./venv/bin/pip install -r requirements.txt
-./venv/bin/python manage.py migrate     # crée db.sqlite3 et les 6 protéines
+./venv/bin/python manage.py migrate     
 ./venv/bin/python manage.py runserver
 ```
 
@@ -43,6 +40,8 @@ sert `static/` directement (voir `tardigradesite/urls.py`).
 navigateur                         Django
 ──────────                         ──────
 GET /                        ──>   views.index        ──> static/index.html
+GET /explore_proteins/       ──>   views.page         ──> static/pages/explore_proteins.html
+GET /protein_details/        ──>   views.page         ──> static/pages/protein_details.html
 GET /static/js/main.js       ──>   urls.py (serve)    ──> fichier statique
 fetch /static/models/...     ──>   urls.py (serve)    ──> JSON + binaire 3D
 fetch /api/proteins/?q=Dsup  ──>   views.proteins     ──> SQLite
@@ -76,39 +75,33 @@ Dans le navigateur :
 | `static/js/scene.js` | Three.js : caméra, zoom / couche protéines, sélection |
 | `static/js/atlas.js` | lecture du JSON et du binaire de géométrie |
 | `static/models/` | 10 pièces et 683 396 triangles, prêts pour le navigateur |
-| `static/pages/` | pages Explore Proteins, Protein details et Stress response |
+| `static/pages/explore_proteins.html` | liste et recherche des protéines Django |
+| `static/pages/protein_details.html` | viewer Mol* des structures `.cif` |
+| `static/pages/stress.html` | page Stress response |
+| `static/css/pages.css` | base commune des pages secondaires : en-tête, recherche, cartes |
+| `static/css/protein_details.css` | styles du viewer Mol* et de sa recherche |
+| `static/js/explore_proteins.js` | interroge `/api/proteins/` et rend les cartes |
+| `static/js/protein_details.js` | liste les `.cif` de `static/data/` et pilote Mol* |
 | `static/vendor/three/` | Three.js 0.159.0 + OrbitControls (aucun CDN) |
 
-## Les données 3D
+### Les deux pages protéines ne mélangent rien
 
-`tardigrade-atlas.json` décrit 10 pièces : le corps, huit disques sensoriels
-(Sensilla R1–R4 et L1–L4) et la bouche avec ses stylets. Chaque pièce donne ses
-bornes et trois offsets absolus dans `tardigrade-chunk-0.bin` :
+- **Explore Proteins** (`/explore_proteins/`) lit la **base Django** via
+  `/api/proteins/` : du texte (nom, UniProt, masse, description).
+- **Protein details** (`/protein_details/`) lit les **fichiers `.cif`** de
+  `static/data/` : de la 3D, chargée par Mol* depuis un CDN.
 
-- positions `float32`, 3 par sommet ;
-- normales `int16` normalisées, 3 par sommet ;
-- indices `uint32`, 3 par triangle.
+Chacune a son HTML, son JS et, pour le viewer, son CSS. Le seul fichier partagé
+est `pages.css`. Aucune des deux ne dépend du code de l'autre.
 
-`atlas.js` se contente de découper ce binaire avec `Float32Array` / `Int16Array` /
-`Uint32Array`. Pour comprendre le calcul d'éventail et le cadrage, tout est dans
-`setPieces()` de `scene.js`.
 
-## Différences avec `../tardigrade/`
-
-- React, TypeScript, Tailwind et Vite ont été retirés ; l'interface est en HTML
-  + CSS + DOM direct, sans étape de compilation.
-- La pièce sélectionnée est réellement surlignée dans la scène (dans la version
-  d'origine, `SELECTED_COLOR` était calculé mais jamais appliqué).
-- Three.js est fourni dans le dossier : le site fonctionne hors ligne.
-- Django sert les fichiers statiques directement ; c'est un montage de
-  développement, pas une configuration de production.
-- Les descriptions scientifiques restent en anglais, comme sur le site d'origine.
 
 ## Personnaliser
 
 - Textes des pièces : `PIECE_DESCRIPTIONS` dans `main.js`.
 - Couleurs : `PART_COLORS` et `SELECTED_COLOR` dans `scene.js`.
 - Taille du modèle à l'écran : `MODEL_HEIGHT` dans `scene.js`.
+- Description d'une protéine : voir « Modifier la base de données » plus bas.
 - Ajouter une protéine :
 
 ```sh
@@ -152,3 +145,52 @@ fournir une vraie `SECRET_KEY`.
   « Source & scope » du site.
 - Three.js, licence MIT (voir `static/vendor/three/`).
 - Code de l'application : licence MIT, voir `LICENSE`.
+
+## Modifier la base de données
+
+Les six protéines de départ sont créées par
+`tardigradesite/migrations/0002_seed_proteins.py`. Attention : cette migration
+ne s'exécute **qu'une seule fois**. Éditer le texte dans `0002` puis relancer
+`migrate` ne change rien — elle est déjà marquée appliquée (`showmigrations`)
+et `seed()` utilise `bulk_create`.
+
+Trois façons de mettre à jour une description :
+
+**1. Nouvelle migration (recommandé)** — `tardigradesite/migrations/0003_....py` :
+
+```python
+from django.db import migrations
+
+DESCRIPTIONS = {'Dsup (damage suppressor)': 'Nouvelle description…'}
+
+
+def update(apps, schema_editor):
+    Protein = apps.get_model('tardigradesite', 'Protein')
+    for name, description in DESCRIPTIONS.items():
+        Protein.objects.filter(name=name).update(description=description)
+
+
+class Migration(migrations.Migration):
+    dependencies = [('tardigradesite', '0002_seed_proteins')]
+    operations = [migrations.RunPython(update, migrations.RunPython.noop)]
+```
+
+```sh
+./venv/bin/python manage.py migrate
+```
+
+**2. Directement en base (dev, plus rapide)**
+
+```sh
+./venv/bin/python manage.py shell -c "from tardigradesite.models import Protein; Protein.objects.filter(name='Dsup (damage suppressor)').update(description='…')"
+```
+
+**3. Repartir de zéro (efface la table)**
+
+```sh
+./venv/bin/python manage.py migrate tardigradesite zero   # unseed() supprime les 6 protéines
+./venv/bin/python manage.py migrate                       # seed() les recrée avec le nouveau texte
+```
+
+Côté site, aucun code à toucher : le JS lit `/api/proteins/` à l'affichage, donc
+un simple rafraîchissement de la page montre la nouvelle description.

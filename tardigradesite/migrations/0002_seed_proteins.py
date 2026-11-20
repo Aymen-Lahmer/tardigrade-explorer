@@ -10,11 +10,11 @@ PROTEINS = [
     {
         'name': 'Dsup (damage suppressor)',
         'description': (
-            'Protéine suppresseur de dommages identifiée chez le tardigrade '
-            'Ramazzottius varieornatus. Protéine désordonnée associée aux '
-            'nucléosomes, elle protège l’ADN des radiations ionisantes et des '
-            'radicaux hydroxyles ; exprimée dans des cellules humaines, elle '
-            'augmente nettement leur tolérance au stress.'
+            'Damage-suppressing protein identified in tardigrades '
+            'Ramazzottius varieornatus. A disordered protein associated with '
+            'nucleosomes; it protects DNA from ionizing radiation and from '
+            'hydroxyl radicals; when expressed in human cells, it '
+            'significantly increases their stress tolerance.'
         ),
     },
     {

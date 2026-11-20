@@ -278,7 +278,7 @@ async function boot() {
     const atlas = await loadAtlas();
     state.atlas = atlas;
 
-    $('piece-count').textContent = `${atlas.parts.length} protein sites`;
+    $('piece-count').textContent = `Protein sites `;
     $('loading-detail').textContent = 'Loading the geometry…';
 
     const geometries = await loadGeometries(atlas);
