@@ -18,9 +18,30 @@ const proteins = [
 
 let viewer;
 
+const vp = molstar.lib?.plugin?.PluginConfig?.Viewport;
+const config = vp ? [
+    [vp.ShowXR, 'never'],          
+    [vp.ShowIllumination, false],  
+] : [];
+
 const viewerPromise = molstar.Viewer.create("viewer3", {
-  layoutIsExpanded: false,
-  layoutShowControls: false,
+    layoutIsExpanded: false,
+    layoutShowControls: true,        
+    layoutShowRemoteState: false,
+    layoutShowSequence: true,        
+    layoutShowLog: false,            
+    layoutShowLeftPanel: false,      
+    collapseRightPanel: true,       
+    viewportShowReset: true,
+    viewportShowScreenshotControls: true,
+    viewportShowControls: false,     
+    viewportShowExpand: true,
+    viewportShowToggleFullscreen: false,
+    viewportShowSettings: true,
+    viewportShowSelectionMode: false,
+    viewportShowAnimation: false,
+    viewportShowTrajectoryControls: false,
+    config: config,                  
 });
 
 viewerPromise.then(async function (v) {
@@ -72,6 +93,7 @@ async function loadProtein(protein) {
 
   document.getElementById("selected-protein").textContent =
     "Currently displaying: " + protein.name;
+    showProteinName(protein); 
 }
 
 // 4. RÉCUPÉRATION DES ÉLÉMENTS HTML
@@ -141,3 +163,66 @@ document.addEventListener("click", function (event) {
     searchResults.hidden = true;
   }
 });
+
+// 8. NOM DE LA PROTÉINE (lu dans le fichier .cif local)
+
+// Lit le nom de la première protéine (entité "polymer") dans un texte mmCIF
+function readEntityName(cif) {
+  const lines = cif.split('\n');
+  const clean = (v) => v.replace(/^(['"])(.*)\1$/, '$2');
+
+  // Cas A : plusieurs entités -> tableau "loop_" avec les colonnes _entity.xxx
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].trim() !== 'loop_') continue;
+    const cols = [];
+    let j = i + 1;
+    while (j < lines.length && lines[j].startsWith('_')) { cols.push(lines[j].trim()); j++; }
+    if (!cols.length || !cols[0].startsWith('_entity.')) continue;
+
+    const iType = cols.indexOf('_entity.type');
+    const iDesc = cols.indexOf('_entity.pdbx_description');
+    if (iDesc < 0) return null;
+
+    const body = [];
+    while (j < lines.length && !/^(#|loop_|_)/.test(lines[j])) { body.push(lines[j]); j++; }
+    const values = body.join('\n').match(/\n?;[\s\S]*?\n;|'(?:[^']|'(?=\S))*'|"(?:[^"]|"(?=\S))*"|\S+/g) || [];
+    const cell = (v) => v.startsWith('\n;') || v.startsWith(';') ? v.replace(/^\n?;/, '').replace(/\n;$/, '').trim() : clean(v);
+
+    for (let r = 0; r + cols.length <= values.length; r += cols.length) {
+      const type = iType >= 0 ? clean(values[r + iType]) : 'polymer';
+      if (type === 'polymer') return cell(values[r + iDesc]);
+    }
+  }
+
+  // Cas B : une seule entité -> "_entity.pdbx_description   valeur"
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].startsWith('_entity.pdbx_description')) {
+      const rest = lines[i].slice('_entity.pdbx_description'.length).trim();
+      if (rest) return clean(rest);
+      const next = lines[i + 1] || '';
+      if (next.startsWith(';')) {
+        const parts = [next.slice(1)];
+        for (let k = i + 2; k < lines.length && !lines[k].startsWith(';'); k++) parts.push(lines[k]);
+        return parts.join(' ').trim();
+      }
+      return clean(next.trim());
+    }
+  }
+  return null;
+}
+
+// Remplit le tableau d'informations pour la structure affichée
+async function showProteinName(protein) {
+  
+
+  const cell = document.getElementById("info-name");
+  cell.textContent = "Loading…";
+
+  try {
+    const response = await fetch(protein.file);
+    if (!response.ok) throw new Error("File not found");
+    cell.textContent = readEntityName(await response.text()) || "—";
+  } catch (error) {
+    cell.textContent = "—";
+  }
+}
