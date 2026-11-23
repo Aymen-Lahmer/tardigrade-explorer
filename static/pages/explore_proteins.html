@@ -9,6 +9,8 @@
   <link rel="icon" href="/static/favicon.svg" />
   <!-- Base commune aux pages secondaires (typographie, en-tête, .cards, note) -->
   <link rel="stylesheet" href="/static/css/pages.css" />
+  <!-- Styles propres à cette page : barre de recherche, filtres, tableau -->
+  <link rel="stylesheet" href="/static/css/explore_proteins.css" />
 </head>
 <body>
   <header class="page-head">
@@ -17,6 +19,93 @@
   </header>
 
   <main class="page">
+    <p class="eyebrow">Protein explorer</p>
+    <h1>Explore proteins</h1>
+
+    <!-- BARRE DE RECHERCHE : choisir le champ (nom/famille, UniProt, PDB, description) puis taper -->
+    <div class="explorer-search">
+      <select id="search-field" aria-label="Search by">
+        <option value="name">Protein name</option>
+        <option value="uniprot">UniProt ID</option>
+        <option value="pdb">PDB code</option>
+        <option value="description">Description</option>
+      </select>
+      <input type="search" id="protein-search" placeholder="Search a protein, a function, a class..." aria-label="Search proteins" autocomplete="off">
+    </div>
+
+    <p class="note" id="search-status" aria-live="polite"></p>
+
+    <!-- DEUX COLONNES : filtres à gauche, résultats à droite -->
+    <div class="explorer-layout">
+
+      <!-- COLONNE GAUCHE : PANNEAU DE FILTRES (comportement : partie 4) -->
+      <aside class="filters" aria-label="Filters">
+
+        <fieldset class="filter-group">
+          <legend>Protein family</legend>
+          <label><input type="checkbox" name="family" value="Dsup"> Dsup</label>
+          <label><input type="checkbox" name="family" value="CAHS"> CAHS</label>
+          <label><input type="checkbox" name="family" value="SAHS"> SAHS</label>
+          <label><input type="checkbox" name="family" value="LEA"> LEA</label>
+        </fieldset>
+
+        <fieldset class="filter-group">
+          <legend>Length (aa)</legend>
+          <label>Min <output id="length-min-value">0</output>
+            <input type="range" id="length-min" min="0" max="1000" value="0">
+          </label>
+          <label>Max <output id="length-max-value">1000</output>
+            <input type="range" id="length-max" min="0" max="1000" value="1000">
+          </label>
+        </fieldset>
+
+        <fieldset class="filter-group">
+          <legend>Structure</legend>
+          <label><input type="checkbox" name="structure" value="experimental"> Experimental</label>
+          <label><input type="checkbox" name="structure" value="prediction"> Prediction</label>
+          <label><input type="checkbox" name="structure" value="none"> None</label>
+        </fieldset>
+
+        <fieldset class="filter-group">
+          <legend>Disordered structure</legend>
+          <label><input type="checkbox" name="disorder" value="high"> High</label>
+          <label><input type="checkbox" name="disorder" value="medium"> Medium</label>
+          <label><input type="checkbox" name="disorder" value="low"> Low</label>
+        </fieldset>
+
+      </aside>
+
+      <!-- COLONNE DROITE : RÉSULTATS -->
+      <section class="results" aria-label="Results">
+
+        <div class="results-bar">
+          <button type="button" id="open-details" disabled>Open details</button>
+        </div>
+
+        <!-- TABLEAU DES RÉSULTATS : lignes ajoutées par explore_proteins.js
+             (masqué tant qu'il n'y a aucun résultat) -->
+        <table class="protein-table" id="protein-table" hidden>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>UniProt ID</th>
+              <th>PDB code</th>
+              <th>Length</th>
+              <th>Mass (kDa)</th>
+              <th>Structure</th>
+            </tr>
+          </thead>
+          <tbody id="protein-rows"></tbody>
+        </table>
+
+        <div class="export-bar">
+          <button type="button" id="export-fasta" disabled>Export FASTA</button>
+          <button type="button" id="export-csv" disabled>Export CSV</button>
+        </div>
+
+      </section>
+
+    </div>
   </main>
 
   <script src="/static/js/explore_proteins.js"></script>
