@@ -1,0 +1,226 @@
+/* ---------------------------------------------------------------------------
+   Page /explore_proteins/ : recherche, filtres et tableau des protéines.
+
+   Chargée uniquement par static/pages/explore_proteins.html, après pages.css
+   (variables --bg / --ink / --muted / --line / --teal, en-tête, cartes, note).
+   Même thème que le reste du site : fond gris clair, cartes blanches à
+   bordure fine, coins arrondis 10-12 px, accent #263b48 et turquoise #458a85
+   (les mêmes que styles.css).
+--------------------------------------------------------------------------- */
+
+:root {
+  --accent: #263b48;
+}
+
+/* pages.css limite .page à 720 px : trop étroit pour deux colonnes.
+   Cette règle ne s'applique qu'à cette page (ce fichier n'est chargé qu'ici). */
+.page { max-width: 1100px; }
+
+/* Les .note de pages.css sont écrasées par « .page p » (15 px) : on rétablit
+   le petit texte gris utilisé partout ailleurs. */
+.page .note { margin-top: 14px; font-size: 12px; color: #8a949e; }
+
+
+/* 1. BARRE DE RECHERCHE : sélecteur de champ + champ de saisie, centrée */
+
+.explorer-search {
+  display: flex;
+  gap: 10px;
+  max-width: 640px;
+  margin: 22px auto 0;
+}
+
+/* Le champ vient de pages.css (input[type='search']) : on retire sa marge
+   haute, c'est le conteneur qui la porte, et on le laisse prendre la place. */
+.explorer-search input[type='search'] {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+  margin-top: 0;
+}
+
+.explorer-search select {
+  height: 46px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  font: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+/* Le statut (« 6 proteins ») est centré sous la barre */
+#search-status { text-align: center; }
+
+
+/* 2. DEUX COLONNES : filtres à gauche, résultats à droite */
+
+.explorer-layout {
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+  margin-top: 24px;
+}
+
+
+/* 3. PANNEAU DE FILTRES */
+
+.filters {
+  display: grid;
+  gap: 12px;
+}
+
+.filter-group {
+  margin: 0;
+  padding: 14px 16px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.filter-group legend {
+  padding: 0 6px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.filter-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 14px;
+  color: #404b56;
+  cursor: pointer;
+}
+
+.filter-group input[type='checkbox'] { accent-color: var(--accent); }
+
+/* Longueur : libellé + valeur courante au-dessus de chaque curseur */
+.filter-group label:has(input[type='range']) {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 8px;
+  cursor: default;
+}
+.filter-group output {
+  justify-self: end;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.filter-group input[type='range'] {
+  grid-column: 1 / -1;
+  width: 100%;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+
+/* 4. COLONNE DES RÉSULTATS */
+
+.results { min-width: 0; }
+
+.results-bar,
+.export-bar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.export-bar { margin-top: 16px; }
+
+/* Les cartes provisoires gardent leur marge haute de pages.css : on aligne
+   la première sur la barre de boutons. */
+.results .cards { margin-top: 12px; }
+
+
+/* 5. BOUTONS (même aspect que les boutons de styles.css) */
+
+.results-bar button,
+.export-bar button {
+  padding: 9px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+  color: #515d69;
+  cursor: pointer;
+}
+.results-bar button:hover:not(:disabled),
+.export-bar button:hover:not(:disabled) { background: #f4f7f8; }
+
+/* « Open details » : bouton principal, actif seulement quand une ligne est choisie */
+#open-details:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+#open-details:not(:disabled):hover { background: #1f313d; }
+
+.results-bar button:disabled,
+.export-bar button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+
+/* 6. TABLEAU DES PROTÉINES */
+
+.protein-table {
+  width: 100%;
+  margin-top: 12px;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+  font-size: 14px;
+}
+.protein-table[hidden] { display: none; }
+
+.protein-table th {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-align: left;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.protein-table td {
+  padding: 12px 16px;
+  border-top: 1px solid #1825360d;
+  color: #404b56;
+}
+.protein-table tbody tr:first-child td { border-top: 0; }
+
+/* Colonnes « Length » (4e) et « Mass » (5e) : chiffres alignés */
+.protein-table td:nth-child(4),
+.protein-table td:nth-child(5) { font-variant-numeric: tabular-nums; }
+
+.protein-table tbody tr { cursor: pointer; }
+.protein-table tbody tr:hover { background: #f4f7f8; }
+
+/* Ligne choisie (la classe « selected » sera ajoutée par le JS à la partie 4) */
+.protein-table tbody tr.selected { background: #458a8514; }
+.protein-table tbody tr.selected td:first-child { box-shadow: inset 3px 0 0 var(--teal); }
+
+
+/* 7. MOBILE : une seule colonne */
+
+@media (max-width: 800px) {
+  .explorer-layout { grid-template-columns: 1fr; }
+  .filters { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+  .explorer-search { flex-wrap: wrap; }
+  .explorer-search select { flex: 1 1 100%; }
+}
