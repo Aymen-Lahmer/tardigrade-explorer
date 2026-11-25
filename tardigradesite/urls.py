@@ -21,5 +21,7 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('api/proteins/', views.proteins, name='proteins'),
     re_path(r'^static/(?P<path>.+)$', serve, {'document_root': str(STATIC_DIR)}),
+    path('rcsb/', views.get_rcsb_cif, name='rcsb_cif'),
     path('<str:name>/', views.page, name='page'),
+    
 ]

@@ -3,7 +3,7 @@
 from django.db.models import Q
 from django.http import Http404, HttpResponse, JsonResponse
 from django.views.decorators.http import require_GET
-
+import requests
 
 from .models import Protein
 from .settings import STATIC_DIR
@@ -71,3 +71,28 @@ def proteins(request):
     ]
 
     return JsonResponse({'query': query, 'count': len(results), 'results': results})
+
+
+
+@require_GET
+def get_rcsb_cif(request):
+    """Récupère un fichier CIF depuis le serveur RCSB."""
+
+    protein_id = request.GET.get('id', '0xxx').upper()
+
+    url = f"https://files.rcsb.org/view/{protein_id}.cif"
+
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+
+    except requests.RequestException:
+        return JsonResponse(
+            {'error': 'Unable to retrieve CIF file from RCSB'},
+            status=502
+        )
+
+    return HttpResponse(
+        response.text,
+        content_type='text/plain; charset=utf-8'
+    )

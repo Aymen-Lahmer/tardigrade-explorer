@@ -2,74 +2,128 @@
 <html lang="en">
 
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>Protein details · TardiProt</title>
+    <title>Protein details · TardiProt</title>
 
-  <!-- Base commune aux pages secondaires (typographie, en-tête, barre de recherche) -->
-  <link rel="icon" href="/static/favicon.svg">
-  <link rel="stylesheet" href="/static/css/pages.css">
-  <!-- Styles propres à cette page : recherche de structure + viewer Mol* -->
-  <link rel="stylesheet" href="/static/css/protein_details.css">
-
-  <!-- CSS de Mol* -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/molstar@latest/build/viewer/molstar.css">
-
+    <link rel="icon" href="/static/favicon.svg">
+    <link rel="stylesheet" href="/static/css/pages.css">
+    <link rel="stylesheet" href="/static/css/protein_details.css?v=2">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/molstar@latest/build/viewer/molstar.css">
 </head>
 
 <body>
 
-  <!-- HEADER -->
-  <header class="page-head">
-    <a class="brand" href="/">
-      TardiProt <span class="badge">3D</span>
-    </a>
+    <!-- MENU LATÉRAL PRINCIPAL -->
+    <nav class="panel side-rail" aria-label="Sections">
 
-    <a class="back" href="/explore_proteins/" target="_blank" rel="noopener">
-      Explore the protein database
-    </a>
-  </header>
+        <a href="/" target="_blank" rel="noopener" title="Home">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M4 11 12 4l8 7v8a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1z" />
+            </svg>
+            <span>Home</span>
+        </a>
+
+        <a href="/explore_proteins/" target="_blank" rel="noopener" title="Explore proteins">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="11" cy="11" r="7" />
+                <path d="m20 20-3.5-3.5" />
+            </svg>
+            <span>Explore Proteins</span>
+        </a>
+
+        <a href="/protein_details/" target="_blank" rel="noopener" title="Protein details">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M8 7h12M8 12h12M8 17h12M4 7h.01M4 12h.01M4 17h.01" />
+            </svg>
+            <span>Protein details</span>
+        </a>
+
+        <a href="/stress/" target="_blank" rel="noopener" title="Stress response">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M13 3 5 14h6l-1 7 8-11h-6z" />
+            </svg>
+            <span>Stress response</span>
+        </a>
+
+    </nav>
+
+    <!-- HEADER -->
+    <header class="page-head">
+
+        <a class="brand" href="/">
+            TardiProt <span class="badge">3D</span>
+        </a>
+
+        <a class="back" href="/explore_proteins/" target="_blank" rel="noopener">
+            Explore the protein database
+        </a>
+
+    </header>
+
+    <!-- RECHERCHE D'UNE STRUCTURE PDB -->
+    <section class="protein-search" aria-label="Structure search">
+
+        <form id="prot_form" action="/rcsb/" method="GET">
+
+            <input
+                type="search"
+                id="prot"
+                name="id"
+                placeholder="Search a structure (ex: 4R5J)..."
+                maxlength="4"
+                required
+                autocomplete="off"
+            >
+
+        </form>
+
+    </section>
 
 
-  <!-- BARRE DE RECHERCHE : choisir une structure .cif -->
-  <section class="protein-search" aria-label="Structure search">
+    <!-- VIEWER + INFORMATIONS -->
+    <div class="protein-layout">
 
-    <input type="search" id="protein-search" placeholder="Search a structure (9RKP, 4R5J)..." aria-label="Search a 3D structure" autocomplete="off">
+        <div id="viewer3"></div>
 
-    <div id="search-results" hidden></div>
+        <aside id="table">
 
-  </section>
+            <h2>Protein information</h2>
 
+            <table class="info-table">
 
-  <!-- STRUCTURE ACTUELLEMENT AFFICHÉE -->
-  <div id="selected-protein">
-    Currently displaying: 9RKP
-  </div>
+                <tr>
+                    <th>Name</th>
+                    <td id="info-name">—</td>
+                </tr>
 
+                <tr>
+                    <th>Code</th>
+                    <td id="info-id">—</td>
+                </tr>
 
-<div class="protein-layout">
+                <tr>
+                    <th>Length</th>
+                    <td id="info-length">—</td>
+                </tr>
 
-  <div id="viewer3"></div>
+                <tr>
+                    <th>Weight</th>
+                    <td id="info-weight">—</td>
+                </tr>
 
-  <aside id="table">
-    <h2>Protein information</h2>
-    <table class="info-table">
-      <tr><th>Name</th><td id="info-name">—</td></tr>
-      <tr><th>Code</th><td id="info-id">—</td></tr>
-      <tr><th>Length</th><td id="info-length">—</td></tr>
-      <tr><th>Weight</th><td id="info-weight">—</td></tr>
-    </table>
-  </aside>
+            </table>
 
-</div>
+        </aside>
 
-  <!-- BIBLIOTHÈQUE MOL* -->
-  <script src="https://cdn.jsdelivr.net/npm/molstar@latest/build/viewer/molstar.js"></script>
+    </div>
 
-  <!-- SCRIPT DE LA PAGE -->
-  <script src="/static/js/protein_details.js"></script>
+    <!-- BIBLIOTHÈQUE MOL* -->
+    <script src="https://cdn.jsdelivr.net/npm/molstar@latest/build/viewer/molstar.js"></script>
+
+    <!-- SCRIPT DE LA PAGE -->
+    <script src="/static/js/protein_details.js"></script>
 
 </body>
-
 </html>
